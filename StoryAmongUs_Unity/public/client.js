@@ -11,7 +11,11 @@ window.addEventListener('load', function() {
 		gameInstance.SendMessage("NetworkController", method, args.join(','));
 	};
 
-
+	socket.on('UPDATE_SUBJECT', function(multiplier) {
+	     //var currentUserAtr = multiplier;
+		gameInstance.SendMessage ('NetworkManager', 'OnUpdateSubject',multiplier);
+		//execInUnity('Update_messages', currentUser);
+	});
 					      
 	socket.on('LOGIN_SUCCESS', function(id,name,position,rotation) {
 				      		

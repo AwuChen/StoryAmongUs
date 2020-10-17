@@ -156,6 +156,20 @@ io.on('connection', function(socket){
        }
 	});//END_SOCKET_ON
 
+//create a callback fuction to listening EmitMoveAndRotate() method in NetworkMannager.cs unity script
+	socket.on('SUBJECT', function (_data)
+	{
+	  var data = JSON.parse(_data);	
+	  
+	  if(currentUser)
+	  {
+	   currentUser.multiplier = data.subject;
+	   // send current maze rotation in broadcast to all clients in game
+       socket.broadcast.emit('UPDATE_SUBJECT', currentUser.multiplier);
+       console.log('[INFO] maze multiplier '+currentUser.multiplier);
+       }
+	});//END_SOCKET_ON
+
 	//create a callback fuction to listening EmitMoveAndRotate() method in NetworkMannager.cs unity script
 	socket.on('ROTATE_MAZE', function (_data)
 	{

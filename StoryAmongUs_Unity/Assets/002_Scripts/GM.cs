@@ -71,7 +71,7 @@ public class GM : MonoBehaviour
         {
             int multiplier = Input.GetKey(KeyCode.RightArrow) ? 1 : -1;
             RotateMaze(multiplier);
-            NetworkManager.instance.UpdateMazeRotation(multiplier);
+            //NetworkManager.instance.UpdateMazeRotation(multiplier);
         }
 
         foreach(Transform t in objectsToHide)

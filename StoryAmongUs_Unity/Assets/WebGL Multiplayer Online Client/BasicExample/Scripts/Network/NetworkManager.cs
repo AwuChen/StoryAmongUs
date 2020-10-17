@@ -69,7 +69,16 @@ public class NetworkManager : MonoBehaviour {
     public GameObject[] interactiveSpace;
     public GM gManager;
     public ClickAndGetImage clickImage;
-    
+
+    bool writer = false;
+    string mainSubject = "";
+    public InputField subjectText;
+    public InputField initialVote;
+    public InputField finalVote;
+    public Text initialText;
+    public Text finalText;
+    public Text subjectReveal;
+
     void Awake()
 	{
 		Application.ExternalEval("socket.isReady = true;");
@@ -186,12 +195,12 @@ public class NetworkManager : MonoBehaviour {
 
     public void FriendOfAwu()
     {
-        CanvasManager.instance.inputLogin.text = "friend";
+        writer = false;
     }
 
     public void Dad()
     {
-        CanvasManager.instance.inputLogin.text = "dad";
+        writer = true;
     }
 
     //call be  OnClickJoinBtn() method from CanvasManager class
@@ -273,32 +282,32 @@ public class NetworkManager : MonoBehaviour {
 
 		if (!myPlayer) {
 
-			// take a look in NetworkPlayer.cs script
-			PlayerManager newPlayer;
+			//// take a look in NetworkPlayer.cs script
+			//PlayerManager newPlayer;
 
-			// newPlayer = GameObject.Instantiate( local player avatar or model, spawn position, spawn rotation)
-			newPlayer = GameObject.Instantiate (localPlayersPrefabs [0],
-				new Vector3(float.Parse(pack[2]), float.Parse(pack[3]),
-					float.Parse(pack[4])),Quaternion.identity).GetComponent<PlayerManager> ();
+			//// newPlayer = GameObject.Instantiate( local player avatar or model, spawn position, spawn rotation)
+			//newPlayer = GameObject.Instantiate (localPlayersPrefabs [0],
+			//	new Vector3(float.Parse(pack[2]), float.Parse(pack[3]),
+			//		float.Parse(pack[4])),Quaternion.identity).GetComponent<PlayerManager> ();
 
 
-			Debug.Log("player instantiated");
-			newPlayer.id = pack [0];
-			//this is local player
-			newPlayer.isLocalPlayer = true;
+			//Debug.Log("player instantiated");
+			//newPlayer.id = pack [0];
+			////this is local player
+			//newPlayer.isLocalPlayer = true;
 
-			//now local player online in the arena
-			newPlayer.isOnline = true;
+			////now local player online in the arena
+			//newPlayer.isOnline = true;
 
-			//set local player's 3D text with his name
-			newPlayer.Set3DName(pack[1]);
+			////set local player's 3D text with his name
+			//newPlayer.Set3DName(pack[1]);
 
-			//puts the local player on the list
-			networkPlayers [pack [0]] = newPlayer;
+			////puts the local player on the list
+			//networkPlayers [pack [0]] = newPlayer;
 
-			myPlayer = networkPlayers [pack[0]].gameObject;
+			//myPlayer = networkPlayers [pack[0]].gameObject;
 
-			local_player_id =  pack [0];
+			//local_player_id =  pack [0];
 
 
 
@@ -457,8 +466,9 @@ public class NetworkManager : MonoBehaviour {
 
 	}
 
-    public void UpdateMazeRotation(int multiplier)
+    public void UpdateSubject()
     {
+
         Debug.Log("Right at the start of Update Status to Server");
 
         if (NetworkManager.instance == null)
@@ -468,22 +478,91 @@ public class NetworkManager : MonoBehaviour {
         //hash table <key, value>
         Dictionary<string, string> data = new Dictionary<string, string>();
 
-        data["multiplier"] = multiplier.ToString();
+        data["subject"] = subjectText.text.ToString();
+        
 
-        EmitMazeRotate(data);//call method NetworkSocketIO.EmitPosition for transmit new  player position to all clients in game
+        EmitSubject(data);//call method NetworkSocketIO.EmitPosition for transmit new  player position to all clients in game
         print("updatedRot");
         Debug.Log("Right at the end of Update Status to Server");
 
     }
 
-    public void EmitMazeRotate(Dictionary<string, string> data)
+    public void UpdateScore(int score)
+    {
+
+        Debug.Log("Right at the start of Update Status to Server");
+
+        if (NetworkManager.instance == null)
+        {
+            Debug.Log("NetworkManager is null");
+        }
+        //hash table <key, value>
+        Dictionary<string, string> data = new Dictionary<string, string>();
+        
+        if(mainSubject == initialVote.text.ToString())
+        {
+            score++;
+        }else
+        {
+            score--;
+        }
+
+        data["score"] = score.ToString();
+        
+
+        EmitScore(data);//call method NetworkSocketIO.EmitPosition for transmit new  player position to all clients in game
+        print("updatedRot");
+        Debug.Log("Right at the end of Update Status to Server");
+
+    }
+
+    public void UpdateMazeRotation()
+    {
+        
+        Debug.Log("Right at the start of Update Status to Server");
+
+        if (NetworkManager.instance == null)
+        {
+            Debug.Log("NetworkManager is null");
+        }
+        //hash table <key, value>
+        Dictionary<string, string> data = new Dictionary<string, string>();
+        if (writer)
+            data["multiplier"] = "0";
+        else
+            data["multiplier"] = "1";
+
+        //EmitMazeRotate(data);//call method NetworkSocketIO.EmitPosition for transmit new  player position to all clients in game
+        print("updatedRot");
+        Debug.Log("Right at the end of Update Status to Server");
+
+    }
+
+    public void EmitSubject(Dictionary<string, string> data)
     {
 
         JSONObject jo = new JSONObject(data);
 
         //sends to the nodejs server through socket the json package
-        Application.ExternalCall("socket.emit", "ROTATE_MAZE", new JSONObject(data));
+        Application.ExternalCall("socket.emit", "SUBJECT", new JSONObject(data));
     }
+
+    public void EmitScore(Dictionary<string, string> data)
+    {
+
+        JSONObject jo = new JSONObject(data);
+
+        //sends to the nodejs server through socket the json package
+        Application.ExternalCall("socket.emit", "SCORE", new JSONObject(data));
+    }
+
+    void OnUpdateSubject(string subject)
+    {
+        mainSubject = subject;
+        subjectReveal.text = mainSubject;
+    }
+
+
 
     /// <summary>
     /// Update the network player position and rotation to local player.
@@ -534,7 +613,15 @@ public class NetworkManager : MonoBehaviour {
         clickImage.ReceiveIncommingPhoto(data);
     }
 
+    public void submitInitialVote()
+    {
+        initialText.text = initialVote.text;
+    }
 
+    public void submitFinalVote()
+    {
+        finalText.text = finalVote.text;
+    }
 
     /// <summary>
     /// Update the network player position and rotation to local player.
